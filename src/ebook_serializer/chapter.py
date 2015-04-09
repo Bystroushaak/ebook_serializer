@@ -11,3 +11,6 @@
 class Chapter(object):
     def __init__(self, html):
         self.html = html
+
+    def serialize(self, dir_path):
+        pass

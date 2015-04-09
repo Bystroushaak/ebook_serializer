@@ -23,5 +23,5 @@ class Book(object):
     def add_chapter(self, chapter):
         self._chapters.append(chapter)
 
-    def serialize(self, path):
+    def serialize(self, dir_path):
         pass
