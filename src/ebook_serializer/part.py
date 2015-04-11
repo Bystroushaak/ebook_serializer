@@ -6,15 +6,11 @@
 # Imports =====================================================================
 
 
-
-# Variables ===================================================================
-
-
-
 # Functions & classes =========================================================
+class Part(object):
+    def __init__(self, *args):
+        self.chapters = args
 
-
-
-# Main program ================================================================
-if __name__ == '__main__':
-    pass
+    def serialize(self, dir_path):
+        for chapter in self.chapters:
+            chapter.serialize(dir_path)
