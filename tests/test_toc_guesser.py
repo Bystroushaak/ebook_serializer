@@ -19,10 +19,20 @@ def data_context(fn):
     return os.path.join(local_path, "data", fn)
 
 
+def read_data_context(fn):
+    with open(data_context(fn)) as f:
+        return f.read()
+
+
 @pytest.fixture
 def toc_example():
-    with open(data_context("toc_example.html")) as f:
-        return f.read()
+    return read_data_context("toc_example.html")
+
+
+@pytest.fixture
+def toc_links():
+    return read_data_context("toc_links.txt").splitlines()
+
 
 # with pytest.raises(Exception):
 #     raise Exception()
@@ -30,4 +40,4 @@ def toc_example():
 
 # Tests =======================================================================
 def test_guess_toc(toc_example):
-    pass
+    toc = guess_toc(toc_example)
