@@ -1,4 +1,4 @@
 #! /usr/bin/env sh
 PYTHONPATH="src:$PYTHONPATH"
 
-py.test tests
+py.test tests $@
