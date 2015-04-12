@@ -77,15 +77,13 @@ def _identify_jump(elements):
     """
     # perform numerical derivation of items in clusters
     old = 0
-    jumps = []
+    jumps = {}
     for num, el in elements:
-        jumps.append(
-            (num - old, el)
-        )
+        jumps[el] = num - old
         old = num
 
     # pick item with highest derivation
-    return max(jumps, key=lambda x: x[0])[1]
+    return max(jumps, key=lambda k: jumps[k])
 
 
 def guess_toc_element(document):
@@ -126,7 +124,7 @@ def guess_toc_element(document):
         jumps[jump] = jumps.get(jump, 0) + 1
 
     # pick element containing most links
-    return max(jumps, key=lambda x: jumps[x])
+    return max(jumps, key=lambda k: jumps[k])
 
 
 def guess_toc_links(document):
