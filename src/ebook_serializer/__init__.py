@@ -4,4 +4,5 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
-from toc_guesser import guess_toc
+from toc_guesser import guess_toc_links
+from toc_guesser import guess_toc_element
