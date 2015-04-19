@@ -26,10 +26,10 @@ def _to_absolute_url(link, base_url):
 
 
 def _links_to_absolute_url(links, base_url):
-    return (
+    return [
         _to_absolute_url(link, base_url)
         for link in links
-    )
+    ]
 
 
 def construct_book(toc_links, base_url):

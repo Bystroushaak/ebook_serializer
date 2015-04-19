@@ -9,23 +9,35 @@ import pytest
 from ebook_serializer import book_constructor
 
 from test_toc_guesser import toc_links
+from test_toc_guesser import read_data_context
 
 
 # Variables ===================================================================
+BASE_URL = "http://pharo.gemtalksystems.com"
 
 
 
 # Fixtures ====================================================================
-
+@pytest.fixture
+def abs_toc_links():
+    return read_data_context("absolute_toc_links.txt").splitlines()
 
 
 # Tests =======================================================================
-def test_to_absolute_url(toc_links):
+def test_to_absolute_url():
     absolute_url = "http://pharo.gemtalksystems.com/book/table-of-contents/"
-    base_url = "http://pharo.gemtalksystems.com"
     relative_url = "./book/table-of-contents/"  # notice the ./
 
     assert absolute_url == book_constructor._to_absolute_url(
         relative_url,
-        base_url
+        base_url=BASE_URL
     )
+
+
+def test_links_to_absolute_url(toc_links, abs_toc_links):
+    abs_links = book_constructor._links_to_absolute_url(
+        toc_links,
+        base_url=BASE_URL
+    )
+
+    assert abs_links == abs_toc_links
