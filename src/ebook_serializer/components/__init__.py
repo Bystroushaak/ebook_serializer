@@ -4,7 +4,6 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
-from book import Book
 from part import Part
 from chapter import Chapter
 from microchapter import MicroChapter
