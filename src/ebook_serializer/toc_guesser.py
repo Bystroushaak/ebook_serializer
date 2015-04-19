@@ -4,8 +4,6 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
-from urlparse import urljoin
-
 import dhtmlparser
 
 
@@ -129,21 +127,7 @@ def guess_toc_element(document):
     return max(jumps, key=lambda k: jumps[k])
 
 
-def _to_absolute_url(link, base_url):
-    if link.startswith("http://") or link.startswith("https://"):
-        return link
-
-    return urljoin(base_url, link)
-
-
-def _links_to_absolute_url(links, base_url):
-    return [
-        _to_absolute_url(link, base_url)
-        for link in links
-    ]
-
-
-def guess_toc_links(document, base_url=None):
+def guess_toc_links(document):
     """
     Look for TOC, return list of (relative) links from element which looks like
     TOC.
@@ -156,13 +140,8 @@ def guess_toc_links(document, base_url=None):
     """
     toc_element = guess_toc_element(document)
 
-    links = [
+    return [
         link.params["href"].replace("&amp;", "&")
         for link in toc_element.find("a")
         if "href" in link.params
     ]
-
-    if base_url:
-        links = _links_to_absolute_url(links, base_url)
-
-    return links
