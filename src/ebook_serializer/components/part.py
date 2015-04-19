@@ -11,6 +11,6 @@ class Part(object):
     def __init__(self, *args):
         self.chapters = args
 
-    def serialize(self, dir_path):
+    def _deep_download(self, book_ref):
         for chapter in self.chapters:
-            chapter.serialize(dir_path)
+            chapter._deep_download(book_ref)

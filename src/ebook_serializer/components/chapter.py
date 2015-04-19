@@ -6,11 +6,13 @@
 # Imports =====================================================================
 
 
+
 # Variables ===================================================================
 # Functions & classes =========================================================
 class Chapter(object):
-    def __init__(self, html):
-        self.html = html
+    def __init__(self, content, title=None):
+        self.title = title
+        self.content = content
 
-    def serialize(self, dir_path):
+    def _deep_download(self, book_ref):
         pass
