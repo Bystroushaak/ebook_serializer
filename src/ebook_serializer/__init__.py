@@ -4,5 +4,9 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+from book import Book
+
+from components import Chapter
+
 from toc_guesser import guess_toc_links
 from toc_guesser import guess_toc_element
