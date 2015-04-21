@@ -30,25 +30,22 @@ def _links_to_absolute_url(links, base_url):
 class Book(object):
     def __init__(self, toc_links, base_url):
         self.title = None
-        self.sub_title = None
         self.author = None
+        self.sub_title = None
 
         self.isbn = None
-        self.publisher = None
         self.year = None
+        self.publisher = None
 
-        self.toc_links = _links_to_absolute_url(toc_links, base_url)
         self.base_url = base_url
+        self.toc_links = toc_links
 
+        self._urls = {}  #: url:Chapter mappings to avoid redownload
         self._chapters = []
 
     def download_book(self):
         for link in self.toc_links:
-            content = self.download(link)
-
-            self.add_chapter(
-                self.type_decisioner(content, url=link)
-            )
+            self.add_chapter(link)
 
         self._deep_download()
 
@@ -56,11 +53,21 @@ class Book(object):
         for chapter in self._chapters:
             chapter._deep_download(self)
 
-    def add_chapter(self, chapter):
+    def add_chapter(self, url, chapter=None):
+        url = _to_absolute_url(url, self.base_url)
+
+        if url in self._urls:
+            return
+
+        if not chapter:
+            content = self.download(url)
+            chapter = self.type_decisioner(content, url)
+
+        self._urls[url] = chapter
         self._chapters.append(chapter)
 
     def download(self, url):
-        return requests.get(url).text
+        return requests.get(url).text.encode("utf-8")
 
     def type_decisioner(self, content, url):
         print url
