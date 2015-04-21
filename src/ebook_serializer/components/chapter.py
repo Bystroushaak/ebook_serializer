@@ -13,11 +13,12 @@ import dhtmlparser
 # Variables ===================================================================
 # Functions & classes =========================================================
 class Chapter(object):
-    def __init__(self, content, title=None):
+    def __init__(self, content, title=None, filename=None):
         self.title = title
         self.content = content
+
         self._suffix = ".html"
-        self.filename = None
+        self.filename = filename
 
         try:
             self.dom = dhtmlparser.parseString(content)
