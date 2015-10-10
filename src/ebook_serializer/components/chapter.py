@@ -5,21 +5,33 @@
 #
 # Imports =====================================================================
 import hashlib
-import unicodedata
 
 import dhtmlparser
+
+from tools import safe_filename
 
 
 # Variables ===================================================================
 # Functions & classes =========================================================
 class Chapter(object):
-    def __init__(self, url, content=None, title=None, filename=None):
+    def __init__(self, title, content, filename=None):
         self.title = title
         self.content = content
-        self.url = url
-
-        self._suffix = ".html"
         self.filename = filename
+
+        self._suffix = ".txt"
+
+
+class HTMLChapter(Chapter):
+    def __init__(self, title=None, content=None, filename=None, url=None):
+        super(HTMLChapter, self).__init__(
+            title=title,
+            content=content,
+            filename=filename,
+        )
+
+        self.url = url
+        self._suffix = ".html"
 
         try:
             self.dom = dhtmlparser.parseString(content)
@@ -29,9 +41,10 @@ class Chapter(object):
     def _deep_download(self, book_ref):
         pass
 
-    def get_title(self):
-        if self.title is not None:
-            return self.title
+    @property
+    def title(self):
+        if self.__dict__.get("title") is not None:
+            return self.__dict__["title"]
 
         headings = []
         headings.extend(self.dom.find("h1"))
@@ -51,27 +64,23 @@ class Chapter(object):
             if heading_content:
                 return heading_content
 
-    def _safe_filename(self, fn):
-        fn = fn.decode("utf-8")
-        fn = unicodedata.normalize('NFKD', fn).encode('ascii', 'ignore')
-        fn = fn.replace(" ", "_")
+    @title.setter
+    def title(self, new_title):
+        self.__dict__["title"] = new_title
 
-        return "".join(
-            char
-            for char in fn
-            if char.isalnum() or char in ".-_"
-        )
-
-    def get_filename(self):
+    @property
+    def filename(self):
         if self.filename is not None:
             return self.filename
 
-        title = self.get_title()
-
-        if title:
-            return self._safe_filename(title) + self._suffix
+        if self.title:
+            return safe_filename(self.title) + self._suffix
 
         return hashlib.md5(self.content).hexdigest() + self._suffix
 
+    @filename.setter
+    def filename(self, new_filename):
+        self.__dict__["filename"] = new_filename
+
     def __repr__(self):
-        return self.get_filename()
+        return self.filename
