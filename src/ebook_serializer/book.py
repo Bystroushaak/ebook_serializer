@@ -5,6 +5,7 @@
 #
 # Imports =====================================================================
 import os
+import shutil
 import os.path
 import tempfile
 from os.path import join
@@ -16,8 +17,9 @@ import components
 # Functions & classes =========================================================
 class Book(object):
     def __init__(self):
-        self.chapters = []
         self.images = {}
+        self.styles = {}
+        self.chapters = {}
 
         # required metadata
         self.title = None
@@ -58,23 +60,49 @@ class EpubBook(Book):
 
         with open(container_fn, "w") as f:
             f.write("""<?xml version="1.0" encoding="utf-8"?>
-<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+<container version="1.0"
+           xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
     <rootfile full-path="OEBPS/content.opf"
               media-type="application/oebps-package+xml" />
   </rootfiles>
 </container>""")
 
+    def _process_content(self):
+        pass
+
+    def _create_cover(self):
+        pass
+
+    def _create_toc_ncx(self):
+        # TODO: cover
+        pass
+
+    def _create_content_opf(self):
+        pass
+
+    def _create_oebps(self):
+        oebps_path = join(self._tmp_dir, "OEBPS")
+
+        os.mkdir(oebps_path)
+        self._process_content()
+
+        if self.cover:
+            self._create_cover()
+
+        self._create_toc_ncx()
+        self._create_content_opf()
+
     def to_epub(self):
         self._tmp_dir = tempfile.mkdtemp()
 
-        oebps_path = join(self._tmp_dir, "OEBPS")
-
         self._create_mime()
         self._create_meta_inf()
-        os.mkdir(oebps_path)
+        self._create_oebps()
 
-        import pdb
-        pdb.set_trace()
+        # TODO: zip everything
 
+        # temporary directory cleanup
+        shutil.rmtree(self._tmp_dir)
 
+        # return zip_content
