@@ -38,8 +38,14 @@ class HTMLChapter(Chapter):
         except UnicodeDecodeError:
             self.dom = dhtmlparser.parseString(content.encode("utf-8"))
 
-    def _deep_download(self, book_ref):
-        pass
+    def process_linked_elements(self, process_image, process_link):
+        for img in self.dom.find("img"):
+            process_image(img)
+
+        for link in self.dom.find("a", fn=lambda x: "href" in x.params):
+            process_link(link)
+
+        # for style in # TODO: implement later
 
     @property
     def title(self):
@@ -81,6 +87,14 @@ class HTMLChapter(Chapter):
     @filename.setter
     def filename(self, new_filename):
         self.__dict__["filename"] = new_filename
+
+    # TODO: ABC method
+    def postprocess_content(self):
+        return self.dom.__str__()
+
+    @property
+    def content(self):
+        return self.postprocess_content()
 
     def __repr__(self):
         return self.filename
