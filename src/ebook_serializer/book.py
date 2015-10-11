@@ -4,7 +4,13 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import os
+import os.path
+import tempfile
+from os.path import join
+
 import components
+
 
 # Variables ===================================================================
 # Functions & classes =========================================================
@@ -15,7 +21,7 @@ class Book(object):
 
         # required metadata
         self.title = None
-        self.author = None
+        self.authors = None
         self.sub_title = None
 
         # optional metadata
@@ -30,5 +36,45 @@ class EpubBook(Book):
     def __init__(self):
         super(EpubBook, self).__init__()
 
+        self._tmp_dir = None
+
+    def _create_mime(self):
+        """
+        Create mimetype file to identify ZIP as epub.
+        """
+        mimetype_fn = join(self._tmp_dir, "mimetype")
+
+        with open(mimetype_fn, "w") as f:
+            f.write("application/epub+zip")
+
+    def _create_meta_inf(self):
+        """
+        Create meta information file pointing to content file.
+        """
+        meta_inf_path = join(self._tmp_dir, "META-INF")
+        container_fn = join(meta_inf_path, "container.xml")
+
+        os.mkdir(meta_inf_path)
+
+        with open(container_fn, "w") as f:
+            f.write("""<?xml version="1.0" encoding="utf-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf"
+              media-type="application/oebps-package+xml" />
+  </rootfiles>
+</container>""")
+
     def to_epub(self):
-        pass
+        self._tmp_dir = tempfile.mkdtemp()
+
+        oebps_path = join(self._tmp_dir, "OEBPS")
+
+        self._create_mime()
+        self._create_meta_inf()
+        os.mkdir(oebps_path)
+
+        import pdb
+        pdb.set_trace()
+
+
