@@ -14,7 +14,7 @@ from tools import safe_filename
 # Variables ===================================================================
 # Functions & classes =========================================================
 class Chapter(object):
-    def __init__(self, title, content, filename=None):
+    def __init__(self, title, content, filename):
         self.title = title
         self.content = content
         self.filename = filename
@@ -27,7 +27,7 @@ class HTMLChapter(Chapter):
         super(HTMLChapter, self).__init__(
             title=title,
             content=content,
-            filename=filename,
+            filename=filename,  # may be None, fixed later by property
         )
 
         self.url = url
