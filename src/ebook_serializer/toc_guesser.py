@@ -4,6 +4,8 @@
 # Interpreter version: python 2.7
 #
 # Imports =====================================================================
+import urlparse
+
 import dhtmlparser
 
 
@@ -127,7 +129,7 @@ def guess_toc_element(document):
     return max(jumps, key=lambda k: jumps[k])
 
 
-def guess_toc_links(document):
+def guess_toc_links(document, base_url):
     """
     Look for TOC, return list of (relative) links from element which looks like
     TOC.
@@ -140,8 +142,13 @@ def guess_toc_links(document):
     """
     toc_element = guess_toc_element(document)
 
-    return [
+    links = (
         link.params["href"].replace("&amp;", "&")
         for link in toc_element.find("a")
         if "href" in link.params
+    )
+
+    return [
+        link if "http" in link else urlparse.urljoin(base_url, link)
+        for link in links
     ]
