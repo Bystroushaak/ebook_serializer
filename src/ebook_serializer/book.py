@@ -19,17 +19,19 @@ class Book(object):
     def __init__(self):
         self.images = {}
         self.styles = {}
-        self.chapters = {}
+        self.chapters = []
 
         # required metadata
         self.title = None
-        self.authors = None
+        self.authors = []
         self.sub_title = None
+        self.language = "en"
 
         # optional metadata
         self.isbn = None
-        self.year = None
+        self.published = None
         self.publisher = None
+        self.source = None
 
         self.cover = None
 
@@ -103,6 +105,7 @@ class EpubBook(Book):
         # TODO: zip everything
 
         # temporary directory cleanup
-        shutil.rmtree(self._tmp_dir)
+        # shutil.rmtree(self._tmp_dir)
+        return self._tmp_dir  # TODO: remove
 
         # return zip_content
