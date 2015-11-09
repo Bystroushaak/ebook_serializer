@@ -40,3 +40,7 @@ def safe_filename(fn):
         for char in fn
         if char.isalnum() or char in ".-_"
     )
+
+
+def https_url(url):
+    return url.replace("http://", "https://")

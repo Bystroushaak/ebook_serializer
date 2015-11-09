@@ -5,9 +5,11 @@
 #
 # Imports =====================================================================
 import hashlib
+import urlparse
 
 import dhtmlparser
 
+from tools import https_url
 from tools import safe_filename
 
 
@@ -23,7 +25,8 @@ class Chapter(object):
 
 
 class HTMLChapter(Chapter):
-    def __init__(self, title=None, content=None, filename=None, url=None):
+    def __init__(self, base_url, title=None, content=None, filename=None,
+                 url=None, lazy=False):
         super(HTMLChapter, self).__init__(
             title=title,
             content=content,
@@ -31,21 +34,96 @@ class HTMLChapter(Chapter):
         )
 
         self.url = url
+        self.base_url = base_url
+
         self._suffix = ".html"
 
+        self.dom = None
+        self.cropped_content = None
+        self.cropped_dom = None
+
+        if not lazy:
+            self.parse()
+
+    def parse(self):
         try:
-            self.dom = dhtmlparser.parseString(content)
+            self.dom = dhtmlparser.parseString(self.content)
         except UnicodeDecodeError:
-            self.dom = dhtmlparser.parseString(content.encode("utf-8"))
+            self.content = self.content.encode("utf-8")
+            self.dom = dhtmlparser.parseString(self.content)
 
-    def process_linked_elements(self, process_image, process_link):
-        for img in self.dom.find("img"):
-            process_image(img)
+        self.cropped_content = self.crop_content(
+            content=self.content,
+            dom=self.dom
+        )
+        self.cropped_dom = dhtmlparser.parseString(self.cropped_content)
 
-        for link in self.dom.find("a", fn=lambda x: "href" in x.params):
-            process_link(link)
+    def crop_content(self, content, dom):
+        body = dom.find("body")
 
-        # for style in # TODO: implement later
+        if not body:
+            return content
+
+        return body[0].getContent()
+
+    def link_on_banlist(self, link):
+        if not (link.startswith(self.base_url) or
+                link.startswith(https_url(self.base_url))):
+            return True
+
+        suffix = link.rsplit(".")[-1]
+        if suffix in {"zip", "rar", "gz", "tar"}:
+            return True
+
+        return False
+
+    def _to_absolute_url(self, link):
+        if "://" in link:
+            return link
+
+        return urlparse.urljoin(self.base_url, link)
+
+    def find_links(self):
+        all_links = (
+            self._to_absolute_url(link.params["href"])
+            for link in self.dom.find("a")
+            if link.params.get("href", None)
+        )
+
+        # filter links on banlist
+        return [
+            link
+            for link in all_links
+            if not self.link_on_banlist(link)
+        ]
+
+    def _find_images(self):
+        return [
+            self._to_absolute_url(img.params["src"])
+            for img in self.dom.find("img")
+            if img.params.get("src", None)
+        ]
+
+    def _find_styles(self):
+        style_elements = [
+            self._to_absolute_url(style.params["href"])
+            for style in self.dom.find("style")
+            if "href" in style.params
+        ]
+
+        link_elements = [
+            self._to_absolute_url(style.params["href"])
+            for style in self.dom.find("link", {"rel": "stylesheet"})
+            if "href" in style.params
+        ]
+
+        link_elements2 = [
+            self._to_absolute_url(style.params["href"])
+            for style in self.dom.find("link", {"type": "text/css"})
+            if "href" in style.params
+        ]
+
+        return style_elements + link_elements + link_elements2
 
     @property
     def title(self):
@@ -53,6 +131,7 @@ class HTMLChapter(Chapter):
             return self.__dict__["title"]
 
         headings = []
+        headings.extend(self.dom.find("title"))
         headings.extend(self.dom.find("h1"))
         headings.extend(self.dom.find("h2"))
         headings.extend(self.dom.find("h3"))
@@ -87,14 +166,6 @@ class HTMLChapter(Chapter):
     @filename.setter
     def filename(self, new_filename):
         self.__dict__["filename"] = new_filename
-
-    # TODO: ABC method
-    def postprocess_content(self):
-        return self.dom.__str__()
-
-    @property
-    def content(self):
-        return self.postprocess_content()
 
     def __repr__(self):
         return self.filename
